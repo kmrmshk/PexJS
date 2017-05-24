@@ -65,7 +65,8 @@ _Touch.prototype.getPositionFromEvent = function(e) {
 	var y = e.pageY;
 	var r = this.engine.container.style.zoom;
 	if(r) {
-		var ratio = r.substring(0, r.length - 1) / 100;
+		//var ratio = r.substring(0, r.length - 1) / 100;
+		var ratio = parseFloat(r);
 		x /= ratio;
 		y /= ratio;
 	}
