@@ -28,45 +28,60 @@ var _Touch = function(engine) {
 
 	if(this.engine.option.enableTouch) {
 		var that = this;
+
+		var pastTypeAsStart = null;
+		var pastTypeAsEnd = null;
+
 		this.addListener(document, "keydown", function(e) {
 			that.keyDown(e.keyCode);
 		}, false);
-	
-		if(!("ontouchstart" in document.body)) {
-			engine.option.debug && EngineLogD("PC browser mode detected");
-			this.addListener(engine.container, "mousedown", function(e) {
-				that.touchStart.call(that, e);
-				e.preventDefault();
-			}, false);
-			this.addListener(document, "mouseup", function(e) {
-				that.mouseRelease = {x: that.currentXY.x, y: that.currentXY.y};
-				if(that.isTouch) {
-					that.touchEnd.call(that, e);
-					e.preventDefault();
-				}
-			}, false);
-		}
-		this.addListener(engine.container, "touchstart", function(e) {
-			that.touchStart.call(that, e.touches[0]);
+
+		var handlerMouseDown = function(e){
+			// console.log(e.type, pastTypeAsStart);
+			var asTouch = (e.type === 'touchstart');
+			if(pastTypeAsStart && e.type !== pastTypeAsStart){
+				pastTypeAsStart = null;
+				return false;
+			} else {
+				pastTypeAsStart = e.type;
+			}
+			// console.log('!! execute as' + e.type);
+			that.touchStart.call(that, asTouch ? e.touches[0] : e);
 			e.preventDefault();
-		}, false);
-		this.addListener(document, "touchend", function(e) {
+		};
+
+		var handlerMouseUp = function(e){
+			// console.log(e.type, pastTypeAsEnd);
 			that.mouseRelease = {x: that.currentXY.x, y: that.currentXY.y};
 			if(that.isTouch) {
+				if(pastTypeAsEnd && e.type !== pastTypeAsEnd){
+					pastTypeAsEnd = null;
+					return false;
+				} else {
+					pastTypeAsEnd = e.type;
+				}
+				// console.log('!! execute as' + e.type);
 				that.touchEnd.call(that, e);
 				e.preventDefault();
 			}
-		}, false);
+		};
+
+        if(typeof(window["ontouchstart"]) !== "undefined") {
+			this.addListener(engine.container, "touchstart", handlerMouseDown, false);
+			this.addListener(document, "touchend", handlerMouseUp, false);
+		}
+		this.addListener(engine.container, "mousedown", handlerMouseDown, false);
+        this.addListener(document, "mouseup", handlerMouseUp, false);
 	}
 };
 
 _Touch.prototype.getPositionFromEvent = function(e) {
 	var x = e.pageX;
 	var y = e.pageY;
-	var r = this.engine.container.style.zoom;
+	var r = String(this.engine.container.style.zoom);
 	if(r) {
 		//var ratio = r.substring(0, r.length - 1) / 100;
-		var ratio = parseFloat(r);
+		var ratio = (r.substr(-1) !== "%") ? parseFloat(r) : (r.substring(0, r.length - 1) / 100);
 		x /= ratio;
 		y /= ratio;
 	}
