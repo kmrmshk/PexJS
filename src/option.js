@@ -41,5 +41,6 @@ var defaultOption = {
 	_enableWorkaroundForUnicolor: false,  // experimental
 	colorLevels: 16,
 	swfBinary: null,
-	forceDisableBlendMode: false // experimental
+	forceDisableBlendMode: false, // experimental
+	htmlZoom: 1
 };

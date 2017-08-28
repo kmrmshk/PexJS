@@ -66,37 +66,30 @@ var _Touch = function(engine) {
 			}
 		};
 
-        if(typeof(window["ontouchstart"]) !== "undefined") {
+		if(typeof(window["ontouchstart"]) !== "undefined") {
 			this.addListener(engine.container, "touchstart", handlerMouseDown, false);
 			this.addListener(document, "touchend", handlerMouseUp, false);
 		}
 		this.addListener(engine.container, "mousedown", handlerMouseDown, false);
-        this.addListener(document, "mouseup", handlerMouseUp, false);
+		this.addListener(document, "mouseup", handlerMouseUp, false);
 	}
 };
 
 _Touch.prototype.getPositionFromEvent = function(e) {
-	var x = e.pageX;
-	var y = e.pageY;
-	var r = String(this.engine.container.style.zoom);
-	if(r) {
-		//var ratio = r.substring(0, r.length - 1) / 100;
-		var ratio = (r.substr(-1) !== "%") ? parseFloat(r) : (r.substring(0, r.length - 1) / 100);
-		x /= ratio;
-		y /= ratio;
-	}
+  var ratio = this.engine.option.htmlZoom;
+  var bounds = this.engine.canvas.getBoundingClientRect();
 
-	var parent = this.engine.canvas;
-	while(parent) {
-		x -= parent.offsetLeft;
-		y -= parent.offsetTop;
-		parent = parent.offsetParent;
-	}
-	//		alert(x + ", " + y + " - " + this.engine.container.offsetLeft + "/" + this.engine.container.offsetTop);
-	//console.log("touched X:" + x + " Y:" + y);
-	//console.log("zoom ratio:", r);
-	//console.log("touched X:" + x + " Y:" + y);
-	//console.log("width:", this.engine.container.offsetWidth);
+	// console.log("pageX/Y X:" + pageX + " Y:" + pageY);
+	// console.log("this.engine.container === this.engine.canvas ?");
+	// console.log(this.engine.container === this.engine.canvas);
+	// console.log("this.engine.canvas.getBoundingClientRect");
+	// console.log(bounds);
+
+	var x = (e.pageX - (bounds.left * ratio)) / ratio;
+	var y = (e.pageY - (bounds.top * ratio)) / ratio;
+
+	// console.log("zoom ratio: " + ratio);
+	// console.log("touched X: " + x + " Y: " + y);
 	return {x:x, y:y};
 };
 
